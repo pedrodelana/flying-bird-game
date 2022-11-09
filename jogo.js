@@ -1,13 +1,12 @@
-console.log('[DevSoutinho] Flappy Bird');
+console.log("[DevSoutinho] Flying Bird");
 
 const sprites = new Image();
-sprites.src = './sprites.png';
+sprites.src = "./sprites.png";
 
-const canvas = document.querySelector('canvas');
-const contexto = canvas.getContext('2d');
+const canvas = document.querySelector("canvas");
+const contexto = canvas.getContext("2d");
 
-
-// [Plano de Fundo]
+// Plano de Fundo
 const planoDeFundo = {
   spriteX: 390,
   spriteY: 0,
@@ -17,14 +16,14 @@ const planoDeFundo = {
   y: canvas.height - 204,
   desenha() {
     contexto.fillStyle = '#70c5ce';
-    contexto.fillRect(0,0, canvas.width, canvas.height)
+    contexto.fillRect(0,0, canvas.width, canvas.height);
 
     contexto.drawImage(
       sprites,
       planoDeFundo.spriteX, planoDeFundo.spriteY,
       planoDeFundo.largura, planoDeFundo.altura,
       planoDeFundo.x, planoDeFundo.y,
-      planoDeFundo.largura, planoDeFundo.altura,
+      planoDeFundo.largura, planoDeFundo.altura
     );
 
     contexto.drawImage(
@@ -32,12 +31,12 @@ const planoDeFundo = {
       planoDeFundo.spriteX, planoDeFundo.spriteY,
       planoDeFundo.largura, planoDeFundo.altura,
       (planoDeFundo.x + planoDeFundo.largura), planoDeFundo.y,
-      planoDeFundo.largura, planoDeFundo.altura,
+      planoDeFundo.largura, planoDeFundo.altura
     );
-  },
-};
+  }
+}
 
-// [Chao]
+// [Chao
 const chao = {
   spriteX: 0,
   spriteY: 610,
@@ -51,7 +50,7 @@ const chao = {
       chao.spriteX, chao.spriteY,
       chao.largura, chao.altura,
       chao.x, chao.y,
-      chao.largura, chao.altura,
+      chao.largura, chao.altura
     );
 
     contexto.drawImage(
@@ -59,35 +58,40 @@ const chao = {
       chao.spriteX, chao.spriteY,
       chao.largura, chao.altura,
       (chao.x + chao.largura), chao.y,
-      chao.largura, chao.altura,
+      chao.largura, chao.altura
     );
-  },
-};
+  }
+}
 
-const flappyBird = {
+const flyingBird = {
   spriteX: 0,
   spriteY: 0,
   largura: 33,
   altura: 24,
   x: 10,
   y: 50,
+  gravidade: 0.25,
+  velocidade: 0,
+  atualiza() {
+    flyingBird.velocidade = flyingBird.velocidade + this.gravidade;
+    flyingBird.y = flyingBird.y + flyingBird.velocidade;
+  },
   desenha() {
     contexto.drawImage(
       sprites,
-      flappyBird.spriteX, flappyBird.spriteY, // Sprite X, Sprite Y
-      flappyBird.largura, flappyBird.altura, // Tamanho do recorte na sprite
-      flappyBird.x, flappyBird.y,
-      flappyBird.largura, flappyBird.altura,
+      flyingBird.spriteX, flyingBird.spriteY,
+      flyingBird.largura, flyingBird.altura,
+      flyingBird.x, flyingBird.y,
+      flyingBird.largura, flyingBird.altura
     );
   }
 }
 
 function loop() {
+  flyingBird.atualiza();
   planoDeFundo.desenha();
   chao.desenha();
-  flappyBird.desenha();
-
-  flappyBird.y = flappyBird.y + 1;
+  flyingBird.desenha();
 
   requestAnimationFrame(loop);
 }
