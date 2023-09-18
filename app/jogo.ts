@@ -1,75 +1,28 @@
-const somDeHit = new Audio();
-somDeHit.src = './effects/hit.wav';
+import { VisualAudio } from "./models/visual-audio.js";
+import { Background } from "./models/background.js";
+import { FlyingBirdProp, TelasProp, FloorProp } from "./helpers/types.js";
+import { Floor } from "./models/floor.js";
+import { Message } from "./models/message.js";
 
-const sprites = new Image();
-sprites.src = "./../images/sprites.png";
+const source = new VisualAudio;
 
 const canvas = document.querySelector("canvas");
 const contexto: CanvasRenderingContext2D = canvas.getContext("2d");
 
 // Plano de Fundo
-const planoDeFundo = {
-  spriteX: 390,
-  spriteY: 0,
-  largura: 275,
-  altura: 204,
-  x: 0,
-  y: canvas.height - 204,
-  desenha() {
-    contexto.fillStyle = '#70c5ce';
-    contexto.fillRect(0,0, canvas.width, canvas.height);
+const planoDeFundo = new Background;
+//chao
+const chao = new Floor;
 
-    contexto.drawImage(
-      sprites,
-      planoDeFundo.spriteX, planoDeFundo.spriteY,
-      planoDeFundo.largura, planoDeFundo.altura,
-      planoDeFundo.x, planoDeFundo.y,
-      planoDeFundo.largura, planoDeFundo.altura
-    );
+// Mensagem GetReady
+const mensagemGetReady = new Message;
 
-    contexto.drawImage(
-      sprites,
-      planoDeFundo.spriteX, planoDeFundo.spriteY,
-      planoDeFundo.largura, planoDeFundo.altura,
-      (planoDeFundo.x + planoDeFundo.largura), planoDeFundo.y,
-      planoDeFundo.largura, planoDeFundo.altura
-    );
-  }
-}
-
-// Chao
-const chao = {
-  spriteX: 0,
-  spriteY: 610,
-  largura: 224,
-  altura: 112,
-  x: 0,
-  y: canvas.height - 112,
-  desenha() {
-    contexto.drawImage(
-      sprites,
-      chao.spriteX, chao.spriteY,
-      chao.largura, chao.altura,
-      chao.x, chao.y,
-      chao.largura, chao.altura
-    );
-
-    contexto.drawImage(
-      sprites,
-      chao.spriteX, chao.spriteY,
-      chao.largura, chao.altura,
-      (chao.x + chao.largura), chao.y,
-      chao.largura, chao.altura
-    );
-  }
-}
-
-function fazColisao(flyingBird: FlyingBirdProp, chao: any) {
+function fazColisao(flyingBird: FlyingBirdProp, chao: FloorProp) {
   const flyingBirdY = flyingBird.y + flyingBird.altura;
   const chaoY = chao.y;
 
   if(flyingBirdY >= chaoY) {
-    somDeHit.play();
+    source.somDeHit.play();
     return true;
   }
   return false;
@@ -90,7 +43,8 @@ function criaFlyingBird() {
       flyingBird.velocidade = - flyingBird.pulo;
     },
     atualiza() {
-      if(fazColisao(flyingBird, chao)) {
+      const collision = fazColisao(flyingBird, chao);
+      if(collision) {
         mudaParaTela(Telas.INICIO);
       }
   
@@ -99,7 +53,7 @@ function criaFlyingBird() {
     },
     desenha() {
       contexto.drawImage(
-        sprites,
+        source.sprites,
         flyingBird.spriteX, flyingBird.spriteY,
         flyingBird.largura, flyingBird.altura,
         flyingBird.x, flyingBird.y,
@@ -111,33 +65,19 @@ function criaFlyingBird() {
 }
 
 
-// Mensagem GetReady
-const mensagemGetReady = {
-  sX: 134,
-  sY: 0,
-  w: 174,
-  h: 152,
-  x: (canvas.width / 2) - 174 / 2,
-  y: 50,
-  desenha() {
-    contexto.drawImage(
-      sprites,
-      mensagemGetReady.sX, mensagemGetReady.sY,
-      mensagemGetReady.w, mensagemGetReady.h,
-      mensagemGetReady.x, mensagemGetReady.y,
-      mensagemGetReady.w, mensagemGetReady.h
-    );
-  }
-}
+
 
 //
 //Telas
 //
-let character: FlyingBirdProp;
+
+let globais: FlyingBirdProp;
 let telaAtiva: TelasProp;
 
 function mudaParaTela(novaTela: TelasProp) {
   telaAtiva = novaTela;
+  const startGame = telaAtiva.inicializar;
+  console.log("Lana", typeof (startGame));
   
   if(telaAtiva.inicializar) {
     telaAtiva.inicializar();
@@ -145,33 +85,11 @@ function mudaParaTela(novaTela: TelasProp) {
 }
 
 
-interface FlyingBirdProp {
-  spriteX: number,
-  spriteY: number,
-  largura: number,
-  altura: number,
-  x: number,
-  y: number,
-  gravidade: number,
-  velocidade: number,
-  pulo: number,
-  pula(): void,
-  atualiza(): void,
-  desenha():void
-}
-
-interface TelasProp{
-  inicializar(): void,
-  desenha(): void,
-  click(): void,
-  atualiza(): void
-}
-
 const Telas = {
   INICIO: 
   {
     inicializar() {
-      character = criaFlyingBird();
+      globais = criaFlyingBird();
     },
     desenha() {
       planoDeFundo.desenha();
@@ -181,27 +99,25 @@ const Telas = {
     click() {
       mudaParaTela(Telas.JOGO);
     },
-    atualiza() {
-
-    }
+    atualiza()  {}
   },
   JOGO: {
     inicializar() {},
     desenha() {
       planoDeFundo.desenha();
       chao.desenha();
-      character.desenha();
+      globais.desenha();
     },
     click() {
-      character.pula();
+      globais.pula();
     },
     atualiza() {
-      character.atualiza();
+      globais.atualiza();
     }
   }
 };
 
-function loop() {
+function loop() {  
   telaAtiva.desenha();
   telaAtiva.atualiza();
 
@@ -209,9 +125,8 @@ function loop() {
 }
 
 window.addEventListener("click", function() {
-  if(telaAtiva.click) {
-    telaAtiva.click();
-  }
+  
+  telaAtiva.click();
 })
 
 mudaParaTela(Telas.INICIO);
