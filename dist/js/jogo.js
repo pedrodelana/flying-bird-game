@@ -1,137 +1,128 @@
-const somDeHit = new Audio();
-somDeHit.src = './effects/hit.wav';
-const sprites = new Image();
-sprites.src = "./../images/sprites.png";
+import { VisualAudio } from "./models/visual-audio.js";
+import { gameScreenChange } from "./helpers/change-screen.js";
+import { StartScreen } from "./models/screens/start-screen.js";
+import { FlyingBird } from "./models/flying-bird.js";
+const source = new VisualAudio;
 const canvas = document.querySelector("canvas");
 const contexto = canvas.getContext("2d");
 // Plano de Fundo
-const planoDeFundo = {
-    spriteX: 390,
-    spriteY: 0,
-    largura: 275,
-    altura: 204,
-    x: 0,
-    y: canvas.height - 204,
-    desenha() {
-        contexto.fillStyle = '#70c5ce';
-        contexto.fillRect(0, 0, canvas.width, canvas.height);
-        contexto.drawImage(sprites, planoDeFundo.spriteX, planoDeFundo.spriteY, planoDeFundo.largura, planoDeFundo.altura, planoDeFundo.x, planoDeFundo.y, planoDeFundo.largura, planoDeFundo.altura);
-        contexto.drawImage(sprites, planoDeFundo.spriteX, planoDeFundo.spriteY, planoDeFundo.largura, planoDeFundo.altura, (planoDeFundo.x + planoDeFundo.largura), planoDeFundo.y, planoDeFundo.largura, planoDeFundo.altura);
-    }
-};
-// Chao
-const chao = {
-    spriteX: 0,
-    spriteY: 610,
-    largura: 224,
-    altura: 112,
-    x: 0,
-    y: canvas.height - 112,
-    desenha() {
-        contexto.drawImage(sprites, chao.spriteX, chao.spriteY, chao.largura, chao.altura, chao.x, chao.y, chao.largura, chao.altura);
-        contexto.drawImage(sprites, chao.spriteX, chao.spriteY, chao.largura, chao.altura, (chao.x + chao.largura), chao.y, chao.largura, chao.altura);
-    }
-};
-function fazColisao(flyingBird, chao) {
-    const flyingBirdY = flyingBird.y + flyingBird.altura;
-    const chaoY = chao.y;
-    if (flyingBirdY >= chaoY) {
-        somDeHit.play();
-        return true;
-    }
-    return false;
-}
-function criaFlyingBird() {
-    const flyingBird = {
-        spriteX: 0,
-        spriteY: 0,
-        largura: 33,
-        altura: 24,
-        x: 10,
-        y: 50,
-        gravidade: 0.25,
-        velocidade: 0,
-        pulo: 4.6,
-        pula() {
-            flyingBird.velocidade = -flyingBird.pulo;
-        },
-        atualiza() {
-            if (fazColisao(flyingBird, chao)) {
-                mudaParaTela(Telas.INICIO);
-            }
-            flyingBird.velocidade = flyingBird.velocidade + this.gravidade;
-            flyingBird.y = flyingBird.y + flyingBird.velocidade;
-        },
-        desenha() {
-            contexto.drawImage(sprites, flyingBird.spriteX, flyingBird.spriteY, flyingBird.largura, flyingBird.altura, flyingBird.x, flyingBird.y, flyingBird.largura, flyingBird.altura);
-        }
-    };
-    return flyingBird;
-}
-// Mensagem GetReady
-const mensagemGetReady = {
-    sX: 134,
-    sY: 0,
-    w: 174,
-    h: 152,
-    x: (canvas.width / 2) - 174 / 2,
-    y: 50,
-    desenha() {
-        contexto.drawImage(sprites, mensagemGetReady.sX, mensagemGetReady.sY, mensagemGetReady.w, mensagemGetReady.h, mensagemGetReady.x, mensagemGetReady.y, mensagemGetReady.w, mensagemGetReady.h);
-    }
-};
+// const planoDeFundo = new Background;
+// //chao
+// const chao = new Floor;
+// // Mensagem GetReady
+// const mensagemGetReady = new Message;
+// function fazColisao(flyingBird: FlyingBirdProp, chao: FloorProp) {
+//   const flyingBirdY = flyingBird.y + flyingBird.altura;
+//   const chaoY = chao.y;
+//   if(flyingBirdY >= chaoY) {
+//     source.somDeHit.play();
+//     return true;
+//   }
+//   return false;
+// }
+// function criaFlyingBird() {
+//   const flyingBird = {
+//     spriteX: 0,
+//     spriteY: 0,
+//     largura: 33,
+//     altura: 24,
+//     x: 10,
+//     y: 50,
+//     gravidade: 0.25,
+//     velocidade: 0,
+//     pulo: 4.6,
+//     pula(){
+//       flyingBird.velocidade = - flyingBird.pulo;
+//     },
+//     atualiza() {
+//       const collision = fazColisao(flyingBird, chao);
+//       if(collision) {
+//         mudaParaTela(Telas.INICIO);
+//       }
+//       flyingBird.velocidade = flyingBird.velocidade + this.gravidade;
+//       flyingBird.y = flyingBird.y + flyingBird.velocidade;
+//     },
+//     desenha() {
+//       contexto.drawImage(
+//         source.sprites,
+//         flyingBird.spriteX, flyingBird.spriteY,
+//         flyingBird.largura, flyingBird.altura,
+//         flyingBird.x, flyingBird.y,
+//         flyingBird.largura, flyingBird.altura
+//       );
+//     }
+//   }  
+//   return flyingBird;
+// }
 //
 //Telas
 //
-let character;
-let telaAtiva;
-function mudaParaTela(novaTela) {
-    telaAtiva = novaTela;
-    if (telaAtiva.inicializar) {
-        telaAtiva.inicializar();
-    }
-    ;
-}
-const Telas = {
-    INICIO: {
-        inicializar() {
-            character = criaFlyingBird();
-        },
-        desenha() {
-            planoDeFundo.desenha();
-            chao.desenha();
-            mensagemGetReady.desenha();
-        },
-        click() {
-            mudaParaTela(Telas.JOGO);
-        },
-        atualiza() {
-        }
-    },
-    JOGO: {
-        inicializar() { },
-        desenha() {
-            planoDeFundo.desenha();
-            chao.desenha();
-            character.desenha();
-        },
-        click() {
-            character.pula();
-        },
-        atualiza() {
-            character.atualiza();
-        }
-    }
-};
+let globais = new FlyingBird;
+let telaAtiva = new StartScreen;
+// function mudaParaTela(novaTela: TelasProp) {
+//   telaAtiva = novaTela;
+//   const startGame = telaAtiva.inicializar;
+//   console.log("Lana", typeof (startGame));
+//   if(telaAtiva.inicializar) {
+//     telaAtiva.inicializar();
+//   };
+// }
+// const Telas = {
+//   INICIO: 
+//   {
+//     inicializar() {
+//       globais = criaFlyingBird();
+//     },
+//     desenha() {
+//       planoDeFundo.desenha();
+//       chao.desenha();
+//       mensagemGetReady.desenha();
+//     },
+//     click() {
+//       mudaParaTela(Telas.JOGO);
+//     },
+//     atualiza()  {}
+//   },
+//   JOGO: {
+//     inicializar() {},
+//     desenha() {
+//       planoDeFundo.desenha();
+//       chao.desenha();
+//       globais.desenha();
+//     },
+//     click() {
+//       globais.pula();
+//     },
+//     atualiza() {
+//       globais.atualiza();
+//     }
+//   }
+// };
 function loop() {
-    telaAtiva.desenha();
-    telaAtiva.atualiza();
+    telaAtiva.desenha(globais);
+    if (telaAtiva.atualiza) {
+        globais.atualiza();
+    }
     requestAnimationFrame(loop);
 }
 window.addEventListener("click", function () {
-    if (telaAtiva.click) {
-        telaAtiva.click();
+    if (!("inicializar" in telaAtiva)) {
+        let resp = gameScreenChange();
+        globais = resp.bird;
+        telaAtiva = resp.screen;
+    }
+    else {
+        globais.pula();
     }
 });
-mudaParaTela(Telas.INICIO);
+// mudaParaTela(Telas.INICIO);
+// if(telaAtiva.inicializar){
+// 	const resp = gameScreenChange();
+// 	telaAtiva = resp.screen;
+// 	globais = resp.bird;
+// }
+// else {
+// 	const resp = startScreenChange();
+// 	telaAtiva = resp;
+// };
 loop();
