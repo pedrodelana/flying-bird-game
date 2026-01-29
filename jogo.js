@@ -1,3 +1,4 @@
+let frames = 0;
 const somDeHit = new Audio();
 somDeHit.src = './efeitos/hit.wav';
 
@@ -38,30 +39,44 @@ const planoDeFundo = {
 }
 
 // Chao
-const chao = {
-  spriteX: 0,
-  spriteY: 610,
-  largura: 224,
-  altura: 112,
-  x: 0,
-  y: canvas.height - 112,
-  desenha() {
-    contexto.drawImage(
-      sprites,
-      chao.spriteX, chao.spriteY,
-      chao.largura, chao.altura,
-      chao.x, chao.y,
-      chao.largura, chao.altura
-    );
+function criaChao() {
+  const chao = {
+    spriteX: 0,
+    spriteY: 610,
+    largura: 224,
+    altura: 112,
+    x: 0,
+    y: canvas.height - 112,
+    atualiza() {
+      const movimentoDoChao = 1;
+      const repeteEm = chao.largura / 2;
+      const movimentacao = chao.x - movimentoDoChao;
+      // console.log('chao.x ', chao.x);
+      // console.log('repeteEm ', repeteEm);
+      // console.log('movimentacao ', movimentacao % repeteEm);      
 
-    contexto.drawImage(
-      sprites,
-      chao.spriteX, chao.spriteY,
-      chao.largura, chao.altura,
-      (chao.x + chao.largura), chao.y,
-      chao.largura, chao.altura
-    );
+      chao.x = movimentacao % repeteEm;
+    },
+    desenha() {
+      contexto.drawImage(
+        sprites,
+        chao.spriteX, chao.spriteY,
+        chao.largura, chao.altura,
+        chao.x, chao.y,
+        chao.largura, chao.altura
+      );
+  
+      contexto.drawImage(
+        sprites,
+        chao.spriteX, chao.spriteY,
+        chao.largura, chao.altura,
+        (chao.x + chao.largura), chao.y,
+        chao.largura, chao.altura
+      );
+    }
   }
+
+  return chao;
 }
 
 function fazColisao(flyingBird, chao) {
@@ -90,18 +105,39 @@ function criaFlyingBird() {
       flyingBird.velocidade = - flyingBird.pulo;
     },
     atualiza() {
-      console.log(fazColisao(flyingBird, chao));
-      if(fazColisao(flyingBird, chao)) {
+      console.log(fazColisao(flyingBird, globais.chao));
+      if(fazColisao(flyingBird, globais.chao)) {
         mudaParaTela(Telas.INICIO);
       }
   
       flyingBird.velocidade = flyingBird.velocidade + this.gravidade;
       flyingBird.y = flyingBird.y + flyingBird.velocidade;
     },
+    movimentos: [
+      { spriteX: 0, spriteY: 0, },
+      { spriteX: 0, spriteY: 26, },
+      { spriteX: 0, spriteY: 52, },
+      { spriteX: 0, spriteY: 26, },
+    ],
+    frameAtual: 0,
+    atualizaOFrameAtual() {
+      const intervaloDeFrame = 10;
+      const passouOIntervalo = frames % intervaloDeFrame;
+
+      if(!passouOIntervalo) {
+        const baseDoIncremento = 1;
+        const incremento = baseDoIncremento + flyingBird.frameAtual;
+        const baseRepeticao = flyingBird.movimentos.length;
+        flyingBird.frameAtual = incremento % baseRepeticao;
+        console.log('Incremento >>> ', passouOIntervalo);
+      }      
+    },
     desenha() {
+      flyingBird.atualizaOFrameAtual();
+      const { spriteX, spriteY } = this.movimentos[flyingBird.frameAtual];
       contexto.drawImage(
         sprites,
-        flyingBird.spriteX, flyingBird.spriteY,
+        spriteX, spriteY,
         flyingBird.largura, flyingBird.altura,
         flyingBird.x, flyingBird.y,
         flyingBird.largura, flyingBird.altura
@@ -148,17 +184,19 @@ const Telas = {
   INICIO: {
     inicializar() {
       globais.flyingBird = criaFlyingBird();
+      globais.chao = criaChao();
     },
     desenha() {
       planoDeFundo.desenha();
-      chao.desenha();
+      globais.chao.desenha();
+      globais.flyingBird.desenha();
       mensagemGetReady.desenha();
     },
     click() {
       mudaParaTela(Telas.JOGO);
     },
     atualiza() {
-
+      globais.chao.atualiza();
     }
   }
 };
@@ -166,7 +204,7 @@ const Telas = {
 Telas.JOGO = {
   desenha() {
     planoDeFundo.desenha();
-    chao.desenha();
+    globais.chao.desenha();
     globais.flyingBird.desenha();
   },
   click() {
@@ -181,6 +219,7 @@ function loop() {
   telaAtiva.desenha();
   telaAtiva.atualiza();
 
+  frames = frames + 1;
   requestAnimationFrame(loop);
 }
 
